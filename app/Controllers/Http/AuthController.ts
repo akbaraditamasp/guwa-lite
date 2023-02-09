@@ -14,7 +14,7 @@ export default class AuthController {
 
     const user = await User.query().where('username', username).firstOrFail()
 
-    if (!Hash.verify(user.password, password)) return response.unauthorized()
+    if (!(await Hash.verify(user.password, password))) return response.unauthorized()
 
     return {
       ...user.serialize(),
