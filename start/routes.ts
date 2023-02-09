@@ -25,4 +25,8 @@ Route.group(() => {
     Route.get('/login', 'AuthController.login')
     Route.delete('/logout', 'AuthController.logout').middleware('auth:api')
   }).prefix('auth')
+
+  Route.group(() => {
+    Route.get('/qr', 'WhatsappsController.qr').middleware('auth:api')
+  }).prefix('whatsapp')
 }).prefix('api')
