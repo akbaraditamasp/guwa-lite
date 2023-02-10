@@ -1,6 +1,9 @@
+import Application from '@ioc:Adonis/Core/Application'
 import { JobContract } from '@ioc:Rocketseat/Bull'
+import Message from 'App/Models/Message'
 import Limiter from 'App/Services/Limiter'
 import Whatsapp from 'App/Services/Whatsapp'
+import { MessageMedia } from 'whatsapp-web.js'
 
 /*
 |--------------------------------------------------------------------------
@@ -18,26 +21,52 @@ export default class SendWhatsapp implements JobContract {
   public key = 'SendWhatsapp'
 
   public async handle(job) {
-    const {
-      data: { message, whatsapp_number },
-    } = job
+    const message = job.data
 
-    const registered = await Whatsapp.client
-      .isRegisteredUser(`${whatsapp_number}@c.us`)
-      .then((val) => val)
-      .catch(() => false)
+    await Whatsapp.client.isRegisteredUser(`${message.recipients}@c.us`)
 
-    if (registered) {
-      const result = await Limiter.limiter.schedule(() =>
+    let result
+    if (message.media) {
+      const media = await MessageMedia.fromFilePath(
+        Application.tmpPath('uploads', message.media.name)
+      )
+      result = await Limiter.limiter.schedule(() =>
         Whatsapp.client
-          .sendMessage(`${whatsapp_number}@c.us`, message)
+          .sendMessage(`${message.recipients}@c.us`, media, {
+            caption: message.text || undefined,
+          })
           .then((msg) => msg)
           .catch((e) => e)
       )
-
-      return result
     } else {
-      return 'error not registered'
+      result = await Limiter.limiter.schedule(() =>
+        Whatsapp.client
+          .sendMessage(`${message.recipients}@c.us`, message.text || '-')
+          .then((msg) => msg)
+          .catch((e) => e)
+      )
+    }
+
+    return result
+  }
+
+  public async onCompleted(job) {
+    const message = job.data
+    const messageModel = await Message.find(message.id)
+
+    if (messageModel) {
+      messageModel.status = 'DELIVERED'
+      await messageModel.save()
+    }
+  }
+
+  public async onFailed(job) {
+    const message = job.data
+    const messageModel = await Message.find(message.id)
+
+    if (messageModel) {
+      messageModel.status = 'FAILED'
+      await messageModel.save()
     }
   }
 }

@@ -31,7 +31,8 @@
       "@japa/preset-adonis/build/adonis-typings",
       "@adonisjs/lucid",
       "@adonisjs/auth",
-      "@rocketseat/adonis-bull"
+      "@rocketseat/adonis-bull",
+      "@adonisjs/attachment-lite"
     ]
   }
 }
