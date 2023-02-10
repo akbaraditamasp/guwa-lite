@@ -30,7 +30,8 @@
       "@adonisjs/repl",
       "@japa/preset-adonis/build/adonis-typings",
       "@adonisjs/lucid",
-      "@adonisjs/auth"
+      "@adonisjs/auth",
+      "@rocketseat/adonis-bull"
     ]
   }
 }

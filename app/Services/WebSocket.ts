@@ -1,9 +1,12 @@
-import { Server } from 'socket.io'
 import AdonisServer from '@ioc:Adonis/Core/Server'
+import SocketAuth from 'App/Middleware/SocketAuth'
+import User from 'App/Models/User'
+import { Server } from 'socket.io'
 
 class WebSocket {
   public io: Server
   private booted = false
+  public user: User | null = null
 
   public boot() {
     /**
@@ -20,6 +23,8 @@ class WebSocket {
         methods: ['GET', 'POST'],
       },
     })
+
+    this.io.use(new SocketAuth().connection)
   }
 }
 

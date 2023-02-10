@@ -16,6 +16,7 @@ export default class AppProvider {
     if (this.app.environment === 'web') {
       await import('../start/socket')
       await import('../start/whatsapp')
+      await import('../start/limit')
     }
   }
 

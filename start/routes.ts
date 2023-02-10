@@ -28,5 +28,6 @@ Route.group(() => {
 
   Route.group(() => {
     Route.get('/qr', 'WhatsappsController.qr').middleware('auth:api')
+    Route.post('/', 'WhatsappsController.send')
   }).prefix('whatsapp')
 }).prefix('api')

@@ -21,4 +21,7 @@ export default Env.rules({
   APP_NAME: Env.schema.string(),
   DRIVE_DISK: Env.schema.enum(['local'] as const),
   NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
+  BULL_REDIS_HOST: Env.schema.string({ format: 'host' }),
+  BULL_REDIS_PORT: Env.schema.number(),
+  BULL_REDIS_PASSWORD: Env.schema.string.optional(),
 })
