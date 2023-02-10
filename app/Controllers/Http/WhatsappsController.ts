@@ -16,25 +16,34 @@ export default class WhatsappsController {
     const { text, media, recipients } = await request.validate({
       schema: schema.create({
         text: schema.string.optional(),
-        recipients: schema.string(),
+        recipients: schema.array().members(schema.string()),
         media: schema.file.optional({
           size: '16mb',
         }),
       }),
     })
 
-    const message = new Message()
-    message.recipients = recipients
-    message.text = text || '-'
-    if (media) {
-      message.media = Attachment.fromFile(media)
-      message.text = text || null
+    const messages: Array<Message> = []
+
+    for (let recipient of recipients) {
+      const message = new Message()
+      message.recipients = recipient
+      message.text = text || '-'
+      if (media) {
+        message.media = Attachment.fromFile(media)
+        message.text = text || null
+      }
+      message.status = 'QUEUEING'
+
+      messages.push(message)
     }
-    message.status = 'QUEUEING'
-    await message.save()
 
-    Bull.add(new SendWhatsapp().key, message.serialize())
+    await Message.createMany(messages)
 
-    return message.serialize()
+    return messages.map((val) => {
+      Bull.add(new SendWhatsapp().key, val.serialize())
+
+      return val.serialize()
+    })
   }
 }
