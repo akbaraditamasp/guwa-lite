@@ -25,12 +25,18 @@ export default class WhatsappsController {
 
     const messages: Array<Message> = []
 
+    let mediaAttach
+
+    if (media) {
+      mediaAttach = Attachment.fromFile(media)
+    }
+
     for (let recipient of recipients) {
       const message = new Message()
       message.recipients = recipient
       message.text = text || '-'
       if (media) {
-        message.media = Attachment.fromFile(media)
+        message.media = mediaAttach
         message.text = text || null
       }
       message.status = 'QUEUEING'
