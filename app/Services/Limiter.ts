@@ -15,7 +15,7 @@ class Limiter {
     this.booted = true
     this.limiter = new Bottleneck({
       maxConcurrent: 1,
-      minTime: 15000,
+      minTime: 10000,
     })
   }
 }

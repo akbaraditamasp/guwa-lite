@@ -1,5 +1,7 @@
 import Whatsapp from 'App/Services/Whatsapp'
 import WebSocket from 'App/Services/WebSocket'
+import Hook from 'App/Models/Hook'
+import axios from 'axios'
 
 Whatsapp.boot()
 
@@ -23,4 +25,16 @@ Whatsapp.client.on('disconnected', () => {
 
   Whatsapp.qr = null
   WebSocket.io.emit('qr', { qr: null })
+})
+
+Whatsapp.client.on('message', async (msg) => {
+  const hooks = await Hook.all()
+  for (const hook of hooks) {
+    axios
+      .post(hook.endpoint, {
+        msg,
+      })
+      .then(() => {})
+      .catch(() => {})
+  }
 })
