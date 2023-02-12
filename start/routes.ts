@@ -31,5 +31,6 @@ Route.group(() => {
     Route.put('/hook', 'WhatsappsController.setHook').middleware('auth:api')
     Route.get('/hook', 'WhatsappsController.hook').middleware('auth:api')
     Route.post('/', 'WhatsappsController.send').middleware('auth:api')
+    Route.get('/', 'WhatsappsController.getHistory').middleware('auth:api')
   }).prefix('whatsapp')
 }).prefix('api')

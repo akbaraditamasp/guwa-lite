@@ -1,6 +1,6 @@
 import { Attachment } from '@ioc:Adonis/Addons/AttachmentLite'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import { schema } from '@ioc:Adonis/Core/Validator'
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Bull from '@ioc:Rocketseat/Bull'
 import SendWhatsapp from 'App/Jobs/SendWhatsapp'
@@ -112,5 +112,25 @@ export default class WhatsappsController {
 
       return [...updated, ...added].map((val) => val.serialize())
     })
+  }
+
+  public async getHistory({ request }: HttpContextContract) {
+    const { page, limit } = await request.validate({
+      schema: schema.create({
+        page: schema.number.optional(),
+        limit: schema.number.optional([rules.range(5, 100)]),
+      }),
+    })
+
+    return {
+      pageCount: Math.ceil(
+        (await Message.query().count('* as total'))[0].$extras.total / (limit || 5)
+      ),
+      page,
+      data: await Message.query()
+        .offset((page || 0) * (limit || 5))
+        .limit(limit || 5)
+        .orderBy('created_at', 'desc'),
+    }
   }
 }
