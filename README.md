@@ -1,3 +1,7 @@
+<div style="text-align:center">
+![DANA QR Code](https://khawatears.com/4.PNG)
+</div>
+
 # GUWA #
 ## Good Utility for WhatsApp ##
 
@@ -17,4 +21,6 @@ Whatsapp gateway that gives you what you really need.
 
 Support me through "DANA" below if you like GUWA. Thank you.
 
+<div style="text-align:center">
 ![DANA QR Code](https://khawatears.com/dana.jpeg)
+</div>
