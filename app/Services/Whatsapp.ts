@@ -1,8 +1,9 @@
-import { Client } from 'whatsapp-web.js'
+import { Client, LocalAuth } from 'whatsapp-web.js'
 
 class Whatsapp {
   public client: Client
   private booted = false
+  public qr: String | null = null
 
   public boot() {
     /**
@@ -17,6 +18,7 @@ class Whatsapp {
       puppeteer: {
         args: ['--no-sandbox'],
       },
+      authStrategy: new LocalAuth(),
     })
 
     this.client.initialize()
