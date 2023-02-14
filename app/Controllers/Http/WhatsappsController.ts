@@ -6,8 +6,15 @@ import Bull from '@ioc:Rocketseat/Bull'
 import SendWhatsapp from 'App/Jobs/SendWhatsapp'
 import Hook from 'App/Models/Hook'
 import Message from 'App/Models/Message'
+import User from 'App/Models/User'
 
 import Whatsapp from 'App/Services/Whatsapp'
+import { DateTime } from 'luxon'
+
+interface Graph {
+  date?: DateTime
+  total?: number
+}
 
 export default class WhatsappsController {
   public async qr() {
@@ -127,10 +134,53 @@ export default class WhatsappsController {
         (await Message.query().count('* as total'))[0].$extras.total / (limit || 5)
       ),
       page,
-      data: await Message.query()
-        .offset((page || 0) * (limit || 5))
-        .limit(limit || 5)
-        .orderBy('created_at', 'desc'),
+      data: (
+        await Message.query()
+          .offset((page || 0) * (limit || 5))
+          .limit(limit || 5)
+          .orderBy('created_at', 'desc')
+      ).map((message) => message.serialize()),
+    }
+  }
+
+  public async stats({ auth }: HttpContextContract) {
+    const deliveredMessage = Number(
+      (
+        await Message.query()
+          .where('status', 'DELIVERED')
+          .where('created_at', '>=', DateTime.now().toSQLDate())
+          .count('* as total')
+      )[0].$extras.total
+    )
+    const hooks = Number((await Hook.query().count('* as total'))[0].$extras.total)
+    const users = Number(
+      (await User.query().whereNot('id', auth.use('api').user!.id).count('* as total'))[0].$extras
+        .total
+    )
+    const status = Whatsapp.qr === 'success'
+
+    const end = DateTime.now().minus({ days: 7 })
+    const graph: Array<Graph> = []
+    const messages = await Message.query()
+      .where('created_at', '>=', end.toSQLDate())
+      .select(Database.raw('count(id) as total, date(updated_at) as updated_at'))
+      .groupByRaw('DATE(updated_at)')
+
+    for (let i = 0; i <= 7; i++) {
+      const date = end.plus({ days: i })
+      const message = messages.find((message) => message.updatedAt.toSQLDate() === date.toSQLDate())
+      graph.push({
+        date: date.startOf('day').toUTC(),
+        total: Number(message?.$extras.total || '0'),
+      })
+    }
+
+    return {
+      delivered_message: deliveredMessage,
+      hooks,
+      users,
+      status,
+      graph,
     }
   }
 }
