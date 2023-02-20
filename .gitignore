@@ -6,3 +6,4 @@ coverage
 .env
 tmp
 .wwebjs_auth
+baileys_auth_info
