@@ -3,7 +3,6 @@ import { JobContract } from '@ioc:Rocketseat/Bull'
 import Message from 'App/Models/Message'
 import Limiter from 'App/Services/Limiter'
 import Whatsapp from 'App/Services/Whatsapp'
-import { MessageMedia } from 'whatsapp-web.js'
 
 /*
 |--------------------------------------------------------------------------
@@ -23,27 +22,19 @@ export default class SendWhatsapp implements JobContract {
   public async handle(job) {
     const message = job.data
 
-    await Whatsapp.client.isRegisteredUser(`${message.recipients}@c.us`)
+    const id = `${message.recipients}@s.whatsapp.net`
 
     let result
     if (message.media) {
-      const media = await MessageMedia.fromFilePath(
-        Application.tmpPath('uploads', message.media.name)
-      )
       result = await Limiter.limiter.schedule(() =>
-        Whatsapp.client
-          .sendMessage(`${message.recipients}@c.us`, media, {
-            caption: message.text || undefined,
-          })
-          .then((msg) => msg)
-          .catch((e) => e)
+        Whatsapp.client.sendMessage(id, {
+          image: Application.tmpPath('uploads', message.media.name),
+          caption: `${message.text}`,
+        })
       )
     } else {
       result = await Limiter.limiter.schedule(() =>
-        Whatsapp.client
-          .sendMessage(`${message.recipients}@c.us`, message.text || '-')
-          .then((msg) => msg)
-          .catch((e) => e)
+        Whatsapp.client.sendMessage(id, { text: `${message.text}` })
       )
     }
 
